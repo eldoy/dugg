@@ -8,7 +8,7 @@ Upload your files to Amazon S3.
 ### USAGE
 On your Node.js server:
 ```javascript
-const Dugg = require('dugg)
+const Dugg = require('dugg')
 
 Dugg.config({
   key: 'amazon_key',
