@@ -6,6 +6,10 @@
   "directories": {
     "test": "test"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/fugroup/dugg.git"
+  },
   "scripts": {
     "test": "jest --watch"
   },
