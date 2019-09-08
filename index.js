@@ -15,7 +15,7 @@ const TIMEOUT = 10000
  * {
  *   key: 'amazon_key',
  *   secret: 'amazon_secret',
- *   bucket: '7ino',
+ *   bucket: 'amazon_bucket',
  *   config: {
  *     thumb: {
  *       resize: [120, 120],
