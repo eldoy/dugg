@@ -3,4 +3,3 @@ module.exports = {
   secret: 'amazon_secret',
   bucket: 'amazon_bucket'
 }
-
