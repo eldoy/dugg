@@ -1,14 +1,14 @@
 {
   "name": "dugg",
-  "version": "0.0.1",
-  "description": "Upload files to Amazon S3",
+  "version": "0.1.0",
+  "description": "File toolkit for node and networks",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/fugroup/dugg.git"
+    "type": "git",
+    "url": "https://github.com/fugroup/dugg.git"
   },
   "scripts": {
     "test": "jest --watch"
@@ -16,9 +16,10 @@
   "author": "fugroup <vidar@fugroup.net>",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^23.5.0"
+    "jest": "^24.9.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.321.0"
+    "aws-sdk": "^2.524.0",
+    "jimp": "^0.7.0"
   }
 }
