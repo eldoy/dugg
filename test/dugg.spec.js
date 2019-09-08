@@ -64,4 +64,9 @@ describe('convert', () => {
     expect(info.file_name).toBe(n.url)
     expect(info.file_size).toBe('79 kB')
   })
+
+  it('should upload a file', async () => {
+    const urls = await dugg.upload([file])
+    expect(urls[0]).toBe(`https://7ino.s3.amazonaws.com/${file.name}`)
+  })
 })
