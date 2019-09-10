@@ -66,32 +66,63 @@ module.exports = function(settings = {}) {
 
     /**
      * Download file from URL
+     * @options
+     * quiet: true | false
+     * ondata: function
+     * onend: function
+     * onerror: function
      */
-    download: function(url, path) {
+    download: function(url, path, options = {}) {
       const uri = parse(url)
       if (!path) {
         path = basename(uri.path)
       }
       const file = fs.createWriteStream(path)
 
+      if (typeof options.ondata !== 'function') {
+        options.ondata = function({ percent, downloaded }) {
+          process.stdout.write(`Downloading ${percent}% ${downloaded} bytes\r`)
+        }
+      }
+
+      if (typeof options.onend !== 'function') {
+        options.onend = function({ uri, path }) {
+          process.stdout.write(`${uri.path} downloaded to: ${path}\n`)
+        }
+      }
+
+      if (typeof options.onerror !== 'function') {
+        options.onerror = function({ uri, path }) {
+          process.stdout.write(`${uri.path} error while downloading to ${path}\n`)
+        }
+      }
+
       return new Promise(function(resolve, reject) {
         const request = http.get(uri.href).on('response', function(res) {
-          const len = parseInt(res.headers['content-length'], 10)
+          const size = parseInt(res.headers['content-length'], 10)
           let downloaded = 0
           let percent = 0
+
+          const trigger = function(name) {
+            if (!options.quiet) {
+              options[`on${name}`]({ uri, path, size, file, downloaded, percent })
+            }
+          }
+
           res
             .on('data', function(chunk) {
               file.write(chunk)
               downloaded += chunk.length
-              percent = (100.0 * downloaded / len).toFixed(2)
-              process.stdout.write(`Downloading ${percent}% ${downloaded} bytes\r`)
+              percent = (100.0 * downloaded / size).toFixed(2)
+              trigger('data')
             })
             .on('end', function() {
               file.end()
-              console.log(`${uri.path} downloaded to: ${path}`)
+              trigger('end')
               resolve(path)
             })
             .on('error', function (err) {
+              trigger('error')
               reject(err)
             })
         })
