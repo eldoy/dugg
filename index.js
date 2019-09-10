@@ -3,9 +3,11 @@ const { execSync } = require('child_process')
 const AWS = require('aws-sdk')
 const Jimp = require('jimp')
 const { parse } = require('url')
-const https = require('https')
-const http = require('http')
 const { basename } = require('path')
+const net = {
+  'http:': require('http'),
+  'https:': require('https')
+}
 
 const TIMEOUT = 10000
 const BYTES = 1024
@@ -103,7 +105,7 @@ module.exports = function(settings = {}) {
       }
 
       return new Promise(function(resolve, reject) {
-        const request = http.get(uri.href).on('response', function(res) {
+        const request = net[uri.protocol].get(uri.href).on('response', function(res) {
           const total = parseInt(res.headers['content-length'], 10)
           const totalkb = (total / BYTES).toFixed(2)
           let downloaded = 0
