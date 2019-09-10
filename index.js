@@ -74,6 +74,10 @@ module.exports = function(settings = {}) {
      * onerror: function
      */
     download: function(url, path, options = {}) {
+      if (typeof path === 'object') {
+        options = path
+        path = undefined
+      }
       const uri = parse(url)
       if (!path) {
         path = basename(uri.path)
