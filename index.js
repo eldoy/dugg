@@ -8,6 +8,7 @@ const http = require('http')
 const { basename } = require('path')
 
 const TIMEOUT = 10000
+const BYTES = 1024
 
 /**
  * Setup function
@@ -99,13 +100,24 @@ module.exports = function(settings = {}) {
 
       return new Promise(function(resolve, reject) {
         const request = http.get(uri.href).on('response', function(res) {
-          const size = parseInt(res.headers['content-length'], 10)
+          const total = parseInt(res.headers['content-length'], 10)
+          const totalkb = (total / BYTES).toFixed(2)
           let downloaded = 0
+          let downloadedkb = 0
           let percent = 0
 
           const trigger = function(name) {
             if (!options.quiet) {
-              options[`on${name}`]({ uri, path, size, file, downloaded, percent })
+              options[`on${name}`]({
+                uri,
+                path,
+                total,
+                totalkb,
+                file,
+                downloaded,
+                downloadedkb,
+                percent
+              })
             }
           }
 
@@ -113,7 +125,8 @@ module.exports = function(settings = {}) {
             .on('data', function(chunk) {
               file.write(chunk)
               downloaded += chunk.length
-              percent = (100.0 * downloaded / size).toFixed(2)
+              downloadedkb = (downloaded / BYTES).toFixed(2)
+              percent = (100.0 * downloaded / total).toFixed(2)
               trigger('data')
             })
             .on('end', function() {
