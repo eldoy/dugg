@@ -21,7 +21,7 @@ const dugg = require('dugg')({
 // Get this from a file upload in the browser or from your hard drive
 const files = [{
   size: 165888,
-  path: 'filepath,
+  path: 'filepath',
   name: 'filename',
   type: 'image/png',
   lastModifiedDate: new Date('2019-07-31T08:00:19.944Z')
