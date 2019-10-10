@@ -1,6 +1,6 @@
 {
   "name": "dugg",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "File toolkit for node and networks",
   "main": "index.js",
   "directories": {
