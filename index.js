@@ -127,6 +127,12 @@ module.exports = function(settings = {}) {
             }
           }
 
+          file.on('finish', function() {
+            file.close(function() {
+              resolve(path)
+            })
+          })
+
           res
             .on('data', function(chunk) {
               file.write(chunk)
@@ -138,7 +144,6 @@ module.exports = function(settings = {}) {
             .on('end', function() {
               file.end()
               trigger('end')
-              resolve(path)
             })
             .on('error', function (err) {
               trigger('error')

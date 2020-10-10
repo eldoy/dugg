@@ -27,7 +27,7 @@ const file = {
   lastModifiedDate: new Date('2019-07-31T08:00:19.944Z')
 }
 
-describe('convert', () => {
+describe('dugg', () => {
   beforeAll(() => {
     // Delete processed files
     const paths = [p(n.original), p(n.retina)]
@@ -60,9 +60,8 @@ describe('convert', () => {
     const tmp = `${tmpdir()}/${n.url}`
     const path = await dugg.download(`http://f.o4.no/${n.url}`, tmp)
     expect(path).toBe(tmp)
-    const info = dugg.info(path)
-    expect(info.file_name).toBe(n.url)
-    expect(info.file_size).toBe('79 kB')
+    const stats = fs.statSync(path)
+    expect(stats.size).toEqual(80568)
   })
 
   it('should upload a file', async () => {
