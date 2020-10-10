@@ -51,7 +51,9 @@ describe('convert', () => {
       greyscale: []
     }
     const files = [file, file]
-    await dugg.convert(files, config)
+    const f = await dugg.convert(files, config)
+    const stat = fs.statSync(p(n.original))
+    expect(f[0].size).toEqual(stat.size)
     const info = dugg.info(p(n.original))
     expect(info.image_size).toBe('120x120')
   })

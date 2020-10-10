@@ -180,7 +180,14 @@ module.exports = function(settings = {}) {
         }
         writes.push(image.writeAsync(files[i].path))
       }
-      return Promise.all(writes)
+      await Promise.all(writes)
+
+      // Update info
+      for (const file of files) {
+        const stat = fs.statSync(file.path)
+        file.size = stat.size
+      }
+      return files
     },
 
     /**
