@@ -8,18 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fugroup/dugg.git"
+    "url": "https://github.com/eldoy/dugg.git"
   },
   "scripts": {
     "test": "jest --watch"
   },
-  "author": "fugroup <vidar@fugroup.net>",
+  "author": "Vidar Eldøy <vidar@eldoy.com>",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^24.9.0"
+    "jest": "^26.5.2"
   },
   "dependencies": {
-    "aws-sdk": "^2.524.0",
-    "jimp": "^0.8.0"
+    "aws-sdk": "^2.771.0",
+    "jimp": "^0.16.1"
   }
 }

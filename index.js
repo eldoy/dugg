@@ -62,7 +62,8 @@ module.exports = function(settings = {}) {
           Body: fs.createReadStream(file.path)
         }
         const result = await cdn.upload(params, { queueSize: 1 }).promise()
-        urls.push(result['Location'])
+        file.url = result['Location']
+        urls.push(file.url)
       }
       return urls
     },
@@ -162,16 +163,16 @@ module.exports = function(settings = {}) {
      * Uses the Jimp lib
      */
     convert: async function(files, config) {
-      const reads = []
-      const writes = []
       // Only do for image files
       files = files.filter(f => isImage(f.name))
       if (!files.length) {
         return
       }
+      const reads = []
       for (const file of files) {
         reads.push(Jimp.read(file.path))
       }
+      const writes = []
       const images = await Promise.all(reads)
       for (let i = 0; i < files.length; i++) {
         const image = images[i]
