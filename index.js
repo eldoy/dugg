@@ -165,7 +165,7 @@ module.exports = function(settings = {}) {
     convert: async function(files, config) {
       // Set 'auto' to Jimp.AUTO
       function convertConfig(obj) {
-        for(const key in obj) {
+        for (const key in obj) {
           if (obj[key] && typeof obj[key] === 'object') {
             convertConfig(obj[key])
           } else if (obj[key] === 'auto') {
