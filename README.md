@@ -41,7 +41,7 @@ const path = await dugg.download('http://url-to/your-file.jpg')
  * Convert file
  */
 
-// Jimp options
+// Jimp options, use 'auto' for Jimp.AUTO
 const config = {
   resize: [120, 120],
   greyscale: []

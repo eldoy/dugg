@@ -107,7 +107,7 @@ module.exports = function(settings = {}) {
 
       return new Promise(function(resolve, reject) {
         const request = net[uri.protocol].get(uri.href).on('response', function(res) {
-          const total = parseInt(res.headers['content-length'], 10)
+          const total = parseInt(res.headers['content-length'])
           const totalkb = (total / BYTES).toFixed(2)
           let downloaded = 0
           let downloadedkb = 0
@@ -138,8 +138,8 @@ module.exports = function(settings = {}) {
             .on('data', function(chunk) {
               file.write(chunk)
               downloaded += chunk.length
-              downloadedkb = (downloaded / BYTES).toFixed(2)
-              percent = (100.0 * downloaded / total).toFixed(2)
+              downloadedkb = (downloaded/BYTES).toFixed(2)
+              percent = (100.0 * downloaded/total).toFixed(2)
               trigger('data')
             })
             .on('end', function() {
@@ -153,7 +153,7 @@ module.exports = function(settings = {}) {
         })
         request.setTimeout(TIMEOUT, function() {
           request.abort()
-          reject(new Error(`request timeout after ${TIMEOUT / 1000.0}s`))
+          reject(new Error(`request timeout after ${TIMEOUT/1000.0}s`))
         })
       })
     },
@@ -163,11 +163,22 @@ module.exports = function(settings = {}) {
      * Uses the Jimp lib
      */
     convert: async function(files, config) {
+      // Set 'auto' to Jimp.AUTO
+      function convertConfig(obj) {
+        for(const key in obj) {
+          if (obj[key] && typeof obj[key] === 'object') {
+            convertConfig(obj[key])
+          } else if (obj[key] === 'auto') {
+            obj[key] = Jimp.AUTO
+          }
+        }
+      }
+      convertConfig(config)
+
       // Only do for image files
       files = files.filter(f => isImage(f.name))
-      if (!files.length) {
-        return
-      }
+      if (!files.length) return
+
       const reads = []
       for (const file of files) {
         reads.push(Jimp.read(file.path))
