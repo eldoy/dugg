@@ -34,7 +34,7 @@ module.exports = function(settings = {}) {
    * Check if file name is an image
    */
   const isImage = function(name) {
-    return (/\.(gif|jpe?g|tiff|png)$/i).test(name)
+    return (/\.(gif|jpe?g|tiff|png|bmp)$/i).test(name)
   }
 
   return {
