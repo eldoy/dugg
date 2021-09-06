@@ -64,6 +64,13 @@ module.exports = function(settings = {}) {
         const result = await cdn.upload(params, { queueSize: 1 }).promise()
         file.url = result['Location']
         urls.push(file.url)
+
+        // Log upload
+        if (typeof options.log == 'function') {
+          options.log(file)
+        } else if (options.log === true) {
+          console.log(file.url)
+        }
       }
       return urls
     },
