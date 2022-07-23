@@ -60,9 +60,9 @@ describe('convert', () => {
 
   it('should download a file', async () => {
     const tmp = `${tmpdir()}/${n.url}`
-    const path = await dugg.download(`https://7ino.s3.amazonaws.com/sirloin-logo.png`, tmp)
-    expect(path).toBe(tmp)
-    const info = dugg.info(path)
+    const result = await dugg.download(`https://7ino.s3.amazonaws.com/sirloin-logo.png`, tmp)
+    expect(result.path).toBe(tmp)
+    const info = dugg.info(result.path)
     expect(info.file_name).toBe(n.url)
     expect(info.file_size).toBe('11 kB')
   })

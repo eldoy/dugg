@@ -120,24 +120,28 @@ module.exports = function(settings = {}) {
           let downloadedkb = 0
           let percent = 0
 
-          const trigger = function(name) {
+          function props() {
+            return {
+              uri,
+              path,
+              total,
+              totalkb,
+              file,
+              downloaded,
+              downloadedkb,
+              percent
+            }
+          }
+
+          function trigger(name) {
             if (!options.quiet) {
-              options[`on${name}`]({
-                uri,
-                path,
-                total,
-                totalkb,
-                file,
-                downloaded,
-                downloadedkb,
-                percent
-              })
+              options[`on${name}`](props())
             }
           }
 
           file.on('finish', function() {
             file.close(function() {
-              resolve(path)
+              resolve(props())
             })
           })
 
