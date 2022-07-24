@@ -35,7 +35,7 @@ const urls = await dugg.upload(files)
 /**
  * Download file
  */
-const path = await dugg.download('http://url-to/your-file.jpg')
+const result = await dugg.download('http://url-to/your-file.jpg')
 
 /**
  * Convert file
