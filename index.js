@@ -1,3 +1,5 @@
+process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = '1'
+
 const fs = require('fs')
 const { execSync } = require('child_process')
 const AWS = require('aws-sdk')
@@ -8,6 +10,7 @@ const net = {
   'http:': require('http'),
   'https:': require('https')
 }
+const mime = require('mime-types')
 
 const TIMEOUT = 10000
 const BYTES = 1024
@@ -27,21 +30,24 @@ const BYTES = 1024
  *   }
  * }
  */
-module.exports = function(settings = {}) {
-  AWS.config.update({ accessKeyId: settings.key, secretAccessKey: settings.secret })
+module.exports = function (settings = {}) {
+  AWS.config.update({
+    accessKeyId: settings.key,
+    secretAccessKey: settings.secret
+  })
 
   /**
    * Check if file name is an image
    */
-  const isImage = function(name) {
-    return (/\.(gif|jpe?g|tiff|png|bmp)$/i).test(name)
+  const isImage = function (name) {
+    return /\.(gif|jpe?g|tiff|png|bmp)$/i.test(name)
   }
 
   return {
     /**
      * Upload files to CDN
      */
-    upload: async function(files, options = {}) {
+    upload: async function (files, options = {}) {
       const cdn = new AWS.S3()
       const urls = []
 
@@ -56,10 +62,13 @@ module.exports = function(settings = {}) {
         if (options.timestamp) {
           name = Date.now() + '_' + name
         }
+        const type = mime.lookup(name) || 'application/octet-stream'
+        console.log({ type })
         const params = {
           Bucket: options.bucket || settings.bucket,
           Key: name,
-          Body: fs.createReadStream(file.path)
+          Body: fs.createReadStream(file.path),
+          ContentType: mime.contentType(type)
         }
         const result = await cdn.upload(params, { queueSize: 1 }).promise()
         file.url = result['Location']
@@ -83,7 +92,7 @@ module.exports = function(settings = {}) {
      * onend: function
      * onerror: function
      */
-    download: function(url, path, options = {}) {
+    download: function (url, path, options = {}) {
       if (typeof path === 'object') {
         options = path
         path = undefined
@@ -95,76 +104,80 @@ module.exports = function(settings = {}) {
       const file = fs.createWriteStream(path)
 
       if (typeof options.ondata !== 'function') {
-        options.ondata = function({ percent, downloaded }) {
+        options.ondata = function ({ percent, downloaded }) {
           process.stdout.write(`Downloading ${percent}% ${downloaded} bytes\r`)
         }
       }
 
       if (typeof options.onend !== 'function') {
-        options.onend = function({ uri, path }) {
+        options.onend = function ({ uri, path }) {
           process.stdout.write(`${uri.path} downloaded to: ${path}\n`)
         }
       }
 
       if (typeof options.onerror !== 'function') {
-        options.onerror = function({ uri, path }) {
-          process.stdout.write(`${uri.path} error while downloading to ${path}\n`)
+        options.onerror = function ({ uri, path }) {
+          process.stdout.write(
+            `${uri.path} error while downloading to ${path}\n`
+          )
         }
       }
 
-      return new Promise(function(resolve, reject) {
-        const request = net[uri.protocol].get(uri.href).on('response', function(res) {
-          const total = parseInt(res.headers['content-length'])
-          const totalkb = (total / BYTES).toFixed(2)
-          let downloaded = 0
-          let downloadedkb = 0
-          let percent = 0
+      return new Promise(function (resolve, reject) {
+        const request = net[uri.protocol]
+          .get(uri.href)
+          .on('response', function (res) {
+            const total = parseInt(res.headers['content-length'])
+            const totalkb = (total / BYTES).toFixed(2)
+            let downloaded = 0
+            let downloadedkb = 0
+            let percent = 0
 
-          function props() {
-            return {
-              uri,
-              path,
-              total,
-              totalkb,
-              file,
-              downloaded,
-              downloadedkb,
-              percent
+            function props() {
+              return {
+                uri,
+                path,
+                total,
+                totalkb,
+                file,
+                downloaded,
+                downloadedkb,
+                percent
+              }
             }
-          }
 
-          function trigger(name) {
-            if (!options.quiet) {
-              options[`on${name}`](props())
+            function trigger(name) {
+              if (!options.quiet) {
+                options[`on${name}`](props())
+              }
             }
-          }
 
-          file.on('finish', function() {
-            file.close(function() {
-              resolve(props())
+            file.on('finish', function () {
+              file.close(function () {
+                resolve(props())
+              })
             })
+
+            res
+              .on('data', function (chunk) {
+                file.write(chunk)
+                downloaded += chunk.length
+                downloadedkb = (downloaded / BYTES).toFixed(2)
+                percent = ((100.0 * downloaded) / total).toFixed(2)
+                trigger('data')
+              })
+              .on('end', function () {
+                file.end()
+                trigger('end')
+              })
+              .on('error', function (err) {
+                trigger('error')
+                reject(err)
+              })
           })
-
-          res
-            .on('data', function(chunk) {
-              file.write(chunk)
-              downloaded += chunk.length
-              downloadedkb = (downloaded/BYTES).toFixed(2)
-              percent = (100.0 * downloaded/total).toFixed(2)
-              trigger('data')
-            })
-            .on('end', function() {
-              file.end()
-              trigger('end')
-            })
-            .on('error', function (err) {
-              trigger('error')
-              reject(err)
-            })
-        })
-        request.setTimeout(TIMEOUT, function() {
+        request.setTimeout(TIMEOUT, function () {
           request.abort()
-          reject(new Error(`request timeout after ${TIMEOUT/1000.0}s`))
+          reject(new Error(`request timeout after ${TIMEOUT / 1000.0}s`))
         })
       })
     },
@@ -173,7 +186,7 @@ module.exports = function(settings = {}) {
      * Convert image file according to config
      * Uses the Jimp lib
      */
-    convert: async function(files, config) {
+    convert: async function (files, config) {
       // Set 'auto' to Jimp.AUTO
       function convertConfig(obj) {
         for (const key in obj) {
@@ -187,7 +200,7 @@ module.exports = function(settings = {}) {
       convertConfig(config)
 
       // Only do for image files
-      files = files.filter(f => isImage(f.name))
+      files = files.filter((f) => isImage(f.name))
       if (!files.length) return
 
       const reads = []
@@ -217,16 +230,16 @@ module.exports = function(settings = {}) {
      * Get image file info
      * Relies on exiftool being installed
      */
-    info: function(path) {
+    info: function (path) {
       if (!isImage(path)) {
         return {}
       }
       const x = execSync(`exiftool ${path}`)
         .toString()
         .split('\n')
-        .map(x => x.split(' : ').map(y => y.trim()))
-        .map(x => (x[0] = x[0].toLowerCase().replace(/\s/, '_')) && x)
-        .filter(x => x[0])
+        .map((x) => x.split(' : ').map((y) => y.trim()))
+        .map((x) => (x[0] = x[0].toLowerCase().replace(/\s/, '_')) && x)
+        .filter((x) => x[0])
       const result = {}
       for (const data of x) {
         result[data[0]] = data[1]
