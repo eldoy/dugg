@@ -52,8 +52,8 @@ module.exports = function (settings = {}) {
       const urls = []
 
       // Convert files
-      const { config } = options || settings || {}
-      if (config) {
+      const { config } = options || settings
+      if (typeof config == 'object') {
         await this.convert(files, config)
       }
 
@@ -63,7 +63,6 @@ module.exports = function (settings = {}) {
           name = Date.now() + '_' + name
         }
         const type = mime.lookup(name) || 'application/octet-stream'
-        console.log({ type })
         const params = {
           Bucket: options.bucket || settings.bucket,
           Key: name,
