@@ -12,6 +12,12 @@ const net = {
 }
 const mime = require('mime-types')
 
+// Increase memory limit for Jimp jpeg conversion
+const jpgDecoder = Jimp.decoders['image/jpeg']
+Jimp.decoders['image/jpeg'] = (data) => {
+  return jpgDecoder(data, { maxMemoryUsageInMB: 1024 })
+}
+
 const TIMEOUT = 10000
 const BYTES = 1024
 
