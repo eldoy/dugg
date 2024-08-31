@@ -35,10 +35,6 @@ const BYTES = 1024
  * }
  */
 module.exports = function (settings = {}) {
-  // AWS.config.update({
-  //   accessKeyId: settings.key,
-  //   secretAccessKey: settings.secret
-  // })
   var region = settings.region || 'us-east-1'
   var client = new S3Client({
     region,
