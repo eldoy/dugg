@@ -1,17 +1,17 @@
 jest.setTimeout(20000)
-const fs = require('fs')
-const fspath = require('path')
-const { tmpdir } = require('os')
-const duggConfig = require('../.dugg.config.js')
-const dugg = require('../index.js')(duggConfig)
+var fs = require('fs')
+var fspath = require('path')
+var { tmpdir } = require('os')
+var duggConfig = require('../.dugg.config.js')
+var dugg = require('../index.js')(duggConfig)
 
-const path = fspath.join(__dirname, 'images')
+var path = fspath.join(__dirname, 'images')
 function p(name) {
   return fspath.join(path, name)
 }
 
 // File paths
-const n = {
+var n = {
   original: 'sirloin-logo.png',
   retina: 'sirloin-logo@2x.png',
   upload: 'upload_ea975ea24a208492f9a325b73fac579d',
@@ -19,7 +19,7 @@ const n = {
 }
 
 // Example file
-const file = {
+var file = {
   size: 165888,
   path: p(n.original),
   name: n.original,
@@ -30,8 +30,8 @@ const file = {
 describe('convert', () => {
   beforeAll(() => {
     // Delete processed files
-    const paths = [p(n.original), p(n.retina)]
-    for (const f of paths) {
+    var paths = [p(n.original), p(n.retina)]
+    for (var f of paths) {
       if (fs.existsSync(f)) {
         fs.unlinkSync(f)
       }
@@ -41,35 +41,38 @@ describe('convert', () => {
   })
 
   it('should show file info', async () => {
-    const info = dugg.info(p(n.original))
+    var info = dugg.info(p(n.original))
     expect(info.file_name).toBe(n.original)
   })
 
   it('should resize image', async () => {
-    const config = {
+    var config = {
       resize: [120, 120],
       greyscale: []
     }
-    const files = [file, file]
-    const f = await dugg.convert(files, config)
-    const stat = fs.statSync(p(n.original))
+    var files = [file, file]
+    var f = await dugg.convert(files, config)
+    var stat = fs.statSync(p(n.original))
     expect(f[0].size).toEqual(stat.size)
-    const info = dugg.info(p(n.original))
+    var info = dugg.info(p(n.original))
     expect(info.image_size).toBe('120x120')
   })
 
   it('should download a file', async () => {
-    const tmp = `${tmpdir()}/${n.url}`
-    const result = await dugg.download(`https://7ino.s3.amazonaws.com/sirloin-logo.png`, tmp)
+    var tmp = `${tmpdir()}/${n.url}`
+    var result = await dugg.download(
+      `https://7ino.s3.amazonaws.com/sirloin-logo.png`,
+      tmp
+    )
     expect(result.path).toBe(tmp)
-    const info = dugg.info(result.path)
+    var info = dugg.info(result.path)
     expect(info.file_name).toBe(n.url)
     expect(info.file_size).toBe('11 kB')
   })
 
   it('should upload a file', async () => {
-    const urls = await dugg.upload([file])
-    const url = `https://7ino.s3.amazonaws.com/${file.name}`
+    var urls = await dugg.upload([file])
+    var url = `https://7ino.s3.amazonaws.com/${file.name}`
     expect(urls[0]).toBe(url)
     expect(file.url).toBe(url)
   })

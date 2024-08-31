@@ -1,23 +1,23 @@
-const fs = require('fs')
-const { execSync } = require('child_process')
+var fs = require('fs')
+var { execSync } = require('child_process')
 var { PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
-const Jimp = require('jimp')
-const { parse } = require('url')
-const { basename } = require('path')
-const net = {
+var Jimp = require('jimp')
+var { parse } = require('url')
+var { basename } = require('path')
+var net = {
   'http:': require('http'),
   'https:': require('https')
 }
-const mime = require('mime-types')
+var mime = require('mime-types')
 
 // Increase memory limit for Jimp jpeg conversion
-const jpgDecoder = Jimp.decoders['image/jpeg']
+var jpgDecoder = Jimp.decoders['image/jpeg']
 Jimp.decoders['image/jpeg'] = (data) => {
   return jpgDecoder(data, { maxMemoryUsageInMB: 1024 })
 }
 
-const TIMEOUT = 10000
-const BYTES = 1024
+var TIMEOUT = 10000
+var BYTES = 1024
 
 /**
  * Setup function
@@ -47,7 +47,7 @@ module.exports = function (settings = {}) {
   /**
    * Check if file name is an image
    */
-  const isImage = function (name) {
+  var isImage = function (name) {
     return /\.(gif|jpe?g|tiff|png|bmp)$/i.test(name)
   }
 
@@ -59,13 +59,13 @@ module.exports = function (settings = {}) {
       var urls = []
 
       // Convert files
-      const { config } = options || settings
+      var { config } = options || settings
       if (typeof config == 'object') {
         await this.convert(files, config)
       }
 
       for (var file of files) {
-        let { name } = file
+        var { name } = file
         if (options.timestamp) {
           name = Date.now() + '_' + name
         }
@@ -109,11 +109,11 @@ module.exports = function (settings = {}) {
         options = path
         path = undefined
       }
-      const uri = parse(url)
+      var uri = parse(url)
       if (!path) {
         path = basename(uri.path)
       }
-      const file = fs.createWriteStream(path)
+      var file = fs.createWriteStream(path)
 
       if (typeof options.ondata !== 'function') {
         options.ondata = function ({ percent, downloaded }) {
@@ -136,14 +136,14 @@ module.exports = function (settings = {}) {
       }
 
       return new Promise(function (resolve, reject) {
-        const request = net[uri.protocol]
+        var request = net[uri.protocol]
           .get(uri.href)
           .on('response', function (res) {
-            const total = parseInt(res.headers['content-length'])
-            const totalkb = (total / BYTES).toFixed(2)
-            let downloaded = 0
-            let downloadedkb = 0
-            let percent = 0
+            var total = parseInt(res.headers['content-length'])
+            var totalkb = (total / BYTES).toFixed(2)
+            var downloaded = 0
+            var downloadedkb = 0
+            var percent = 0
 
             function props() {
               return {
@@ -201,7 +201,7 @@ module.exports = function (settings = {}) {
     convert: async function (files, config) {
       // Set 'auto' to Jimp.AUTO
       function convertConfig(obj) {
-        for (const key in obj) {
+        for (var key in obj) {
           if (obj[key] && typeof obj[key] === 'object') {
             convertConfig(obj[key])
           } else if (obj[key] === 'auto') {
@@ -215,15 +215,15 @@ module.exports = function (settings = {}) {
       files = files.filter((f) => isImage(f.name))
       if (!files.length) return
 
-      const reads = []
-      for (const file of files) {
+      var reads = []
+      for (var file of files) {
         reads.push(Jimp.read(file.path))
       }
-      const writes = []
-      const images = await Promise.all(reads)
-      for (let i = 0; i < files.length; i++) {
-        const image = images[i]
-        for (const key in config) {
+      var writes = []
+      var images = await Promise.all(reads)
+      for (var i = 0; i < files.length; i++) {
+        var image = images[i]
+        for (var key in config) {
           image[key](...config[key])
         }
         writes.push(image.writeAsync(files[i].path))
@@ -231,8 +231,8 @@ module.exports = function (settings = {}) {
       await Promise.all(writes)
 
       // Update info
-      for (const file of files) {
-        const stat = fs.statSync(file.path)
+      for (var file of files) {
+        var stat = fs.statSync(file.path)
         file.size = stat.size
       }
       return files
@@ -246,14 +246,14 @@ module.exports = function (settings = {}) {
       if (!isImage(path)) {
         return {}
       }
-      const x = execSync(`exiftool ${path}`)
+      var x = execSync(`exiftool ${path}`)
         .toString()
         .split('\n')
         .map((x) => x.split(' : ').map((y) => y.trim()))
         .map((x) => (x[0] = x[0].toLowerCase().replace(/\s/, '_')) && x)
         .filter((x) => x[0])
-      const result = {}
-      for (const data of x) {
+      var result = {}
+      for (var data of x) {
         result[data[0]] = data[1]
       }
       return result

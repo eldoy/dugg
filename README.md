@@ -3,7 +3,7 @@
 Upload, download, convert and analyze files toolkit for NodeJS.
 
 ### INSTALLATION
-```npm i dugg``` or ```yarn add dugg```
+```npm i dugg```
 
 ### USAGE
 On your Node.js server:
@@ -11,7 +11,7 @@ On your Node.js server:
 /**
  * Setup. Showing default options
  */
-const dugg = require('dugg')({
+var dugg = require('dugg')({
   key: 'amazon_key',
   secret: 'amazon_secret',
   bucket: 'amazon_bucket'
@@ -19,7 +19,7 @@ const dugg = require('dugg')({
 
 // Example file structure
 // Get this from a file upload in the browser or from your hard drive
-const files = [{
+var files = [{
   size: 165888,
   path: 'filepath',
   name: 'filename',
@@ -30,19 +30,19 @@ const files = [{
 /**
  * Upload file
  */
-const urls = await dugg.upload(files)
+var urls = await dugg.upload(files)
 
 /**
  * Download file
  */
-const result = await dugg.download('http://url-to/your-file.jpg')
+var result = await dugg.download('http://url-to/your-file.jpg')
 
 /**
  * Convert file
  */
 
 // Jimp options, use 'auto' for Jimp.AUTO
-const config = {
+var config = {
   resize: [120, 120],
   greyscale: []
 }
@@ -52,6 +52,6 @@ await dugg.convert(files, config)
  * Get file info
  * Needs exiftool installed
  */
-const info = dugg.info('path')
+var info = dugg.info('path')
 ```
 Enjoy! MIT Licensed.
