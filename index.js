@@ -1,8 +1,6 @@
-process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = '1'
-
 const fs = require('fs')
 const { execSync } = require('child_process')
-const AWS = require('aws-sdk')
+var { PutObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const Jimp = require('jimp')
 const { parse } = require('url')
 const { basename } = require('path')
@@ -37,9 +35,17 @@ const BYTES = 1024
  * }
  */
 module.exports = function (settings = {}) {
-  AWS.config.update({
-    accessKeyId: settings.key,
-    secretAccessKey: settings.secret
+  // AWS.config.update({
+  //   accessKeyId: settings.key,
+  //   secretAccessKey: settings.secret
+  // })
+  var region = settings.region || 'us-east-1'
+  var client = new S3Client({
+    region,
+    credentials: {
+      accessKeyId: settings.key,
+      secretAccessKey: settings.secret
+    }
   })
 
   /**
@@ -54,8 +60,7 @@ module.exports = function (settings = {}) {
      * Upload files to CDN
      */
     upload: async function (files, options = {}) {
-      const cdn = new AWS.S3()
-      const urls = []
+      var urls = []
 
       // Convert files
       const { config } = options || settings
@@ -63,21 +68,27 @@ module.exports = function (settings = {}) {
         await this.convert(files, config)
       }
 
-      for (const file of files) {
+      for (var file of files) {
         let { name } = file
         if (options.timestamp) {
           name = Date.now() + '_' + name
         }
-        const type = mime.lookup(name) || 'application/octet-stream'
-        const params = {
-          Bucket: options.bucket || settings.bucket,
+
+        var type = mime.lookup(name) || 'application/octet-stream'
+        var bucket = options.bucket || settings.bucket
+
+        var command = new PutObjectCommand({
+          Bucket: bucket,
           Key: name,
           Body: fs.createReadStream(file.path),
           ContentType: mime.contentType(type)
-        }
-        const result = await cdn.upload(params, { queueSize: 1 }).promise()
-        file.url = result['Location']
-        urls.push(file.url)
+        })
+
+        var result = await client.send(command)
+        var url = `https://${bucket}.s3.amazonaws.com/${name}`
+
+        file.url = url
+        urls.push(url)
 
         // Log upload
         if (typeof options.log == 'function') {
